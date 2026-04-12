@@ -189,7 +189,7 @@ export default function AddPatient() {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             ID Type & Number
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <select
               name="idType"
               value={formData.idType}
@@ -201,7 +201,7 @@ export default function AddPatient() {
                 });
                 setErrors({ ...errors, cnicOrMrNo: "" });
               }}
-              className="p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 w-28"
+              className="p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 sm:w-28 w-full"
             >
               <option value="CNIC">CNIC</option>
               <option value="MR">MR No</option>
@@ -277,6 +277,7 @@ export default function AddPatient() {
         </button>
 
         <button
+          type="button"
           onClick={() => router.push("/doctor/patientToday")}
           className="mt-4 w-full bg-white border-2 border-primary text-primary py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md hover:bg-primary hover:text-white transition-all duration-200 flex items-center justify-center gap-2 group"
         >
