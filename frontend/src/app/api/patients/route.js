@@ -31,16 +31,11 @@ export async function POST(req) {
 export async function GET() {
   try {
     const patients = await prisma.patient.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
-
     return Response.json(patients);
   } catch (error) {
-    return Response.json(
-      { error: "Failed to fetch patients" },
-      { status: 500 },
-    );
+    console.error("GET /api/patients error:", error); // add this
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }

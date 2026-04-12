@@ -27,9 +27,16 @@ export default function DoctorPatients() {
       try {
         const res = await fetch("/api/patients");
         const data = await res.json();
-        setPatients(data);
+
+        if (Array.isArray(data)) {
+          setPatients(data);
+        } else {
+          console.error("Unexpected response:", data);
+          setPatients([]);
+        }
       } catch (err) {
         console.error("Error fetching patients:", err);
+        setPatients([]);
       } finally {
         setLoading(false);
       }
@@ -51,7 +58,7 @@ export default function DoctorPatients() {
           placeholder="Search by name or CNIC/MR No..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md p-3 bg-gray-50 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-gray-400 transition-all"
+          className="text-gray-800 w-full max-w-md p-3 bg-gray-50 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-gray-400 transition-all"
         />
       </div>
 
