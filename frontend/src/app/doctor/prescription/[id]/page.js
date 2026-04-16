@@ -502,6 +502,12 @@ export default function PrescriptionPage() {
                 </div>
               ))}
             </div>
+            <button
+              onClick={() => router.push("/medicines/add")}
+              className="w-full mb-4 py-2.5 rounded-xl border border-dashed border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-all"
+            >
+              + Add Medicine
+            </button>
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">

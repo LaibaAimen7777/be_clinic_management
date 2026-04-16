@@ -104,47 +104,66 @@ export default function DoctorPatients() {
           filteredPatients.map((patient) => (
             <div
               key={patient.id}
-              className={`bg-white/90 backdrop-blur-sm p-5 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] flex justify-between items-center border-l-4 ${
+              className={`bg-white/90 backdrop-blur-sm p-5 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] border-l-4 ${
                 patient.status === "Waiting"
                   ? "border-l-primary"
                   : "border-l-secondary"
               }`}
             >
-              {/* LEFT INFO */}
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {patient.name}
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Age: {patient.age} | {patient.relativeType}{" "}
-                  {patient.relativeName}
-                </p>
-                <p className="text-sm text-gray-600">
-                  CNIC/MR No: {patient.cnicOrMrNo}
-                </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Date: {new Date(patient.date).toLocaleDateString()}
-                </p>
-              </div>
+              {/* FLEX CONTAINER */}
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                {/* LEFT INFO */}
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {patient.name}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Age: {patient.age} | {patient.relativeType}{" "}
+                    {patient.relativeName}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    CNIC/MR No: {patient.cnicOrMrNo}
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Date: {new Date(patient.date).toLocaleDateString()}
+                  </p>
+                </div>
 
-              {/* STATUS */}
-              <span
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${
-                  patient.status === "Waiting"
-                    ? "bg-amber-100 text-amber-700 border-amber-200"
-                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
-                }`}
-              >
-                {patient.status}
-              </span>
-              <button
-                onClick={() =>
-                  router.push(`/doctor/prescription/${patient.id}`)
-                }
-                className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-light transition-all"
-              >
-                + Prescription
-              </button>
+                {/* RIGHT SIDE */}
+                <div className="flex flex-col items-start md:items-end gap-2">
+                  {/* STATUS */}
+                  <span
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${
+                      patient.status === "Waiting"
+                        ? "bg-amber-100 text-amber-700 border-amber-200"
+                        : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                    }`}
+                  >
+                    {patient.status}
+                  </span>
+
+                  {/* BUTTONS */}
+                  {patient.status === "Waiting" ? (
+                    <button
+                      onClick={() =>
+                        router.push(`/doctor/prescription/${patient.id}`)
+                      }
+                      className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:opacity-90 transition-all"
+                    >
+                      + Prescription
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        router.push(`/doctor/view-prescription/${patient.id}`)
+                      }
+                      className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-all"
+                    >
+                      View Prescription
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           ))
         )}
