@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DoctorPatients() {
   const [activeTab, setActiveTab] = useState("Waiting");
@@ -8,6 +9,8 @@ export default function DoctorPatients() {
 
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const router = useRouter();
 
   // Step 1: filter by tab
   const tabFiltered = patients.filter((p) => p.status === activeTab);
@@ -134,6 +137,14 @@ export default function DoctorPatients() {
               >
                 {patient.status}
               </span>
+              <button
+                onClick={() =>
+                  router.push(`/doctor/prescription/${patient.id}`)
+                }
+                className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-light transition-all"
+              >
+                + Prescription
+              </button>
             </div>
           ))
         )}

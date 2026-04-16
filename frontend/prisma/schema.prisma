@@ -21,4 +21,39 @@ model Patient {
   date          DateTime
   status        String
   createdAt     DateTime @default(now())
+  prescriptions Prescription[]
+}
+
+model Medicine {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String
+  createdAt DateTime @default(now())
+}
+
+model Prescription {
+  id         Int      @id @default(autoincrement())
+  patientId  Int
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  
+  // Eye Examination
+  vaRight    String?
+  vaLeft     String?
+  iopRight   String?
+  iopLeft    String?
+  atRight    String?
+  atLeft     String?
+  antSeg     String?
+  fundus     String?
+
+  // Systemic History
+  dm         Boolean  @default(false)
+  htn        Boolean  @default(false)
+  ihd        Boolean  @default(false)
+  asthma     Boolean  @default(false)
+
+  medicines  Json
+  diagnosis  String?
+  treatment  String?
+  createdAt  DateTime @default(now())
 }
