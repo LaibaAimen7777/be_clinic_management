@@ -1,14 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a2a3a;
-  --primary: #1e5f8e;
-  --primary-light: #3a7ca5;
-  --secondary: #7a9eb3;
-  --accent: #c7a17a;
-  --gray-light: #f5f7fa;
-  --gray-mid: #e2e8f0;
+  --background: #f8fafc; /* Soft neutral (not pure white) */
+  --foreground: #0f172a; /* Slate 900 (better readability) */
+
+  --primary: #1e3a8a; /* Deep medical blue */
+  --primary-light: #3b82f6; /* Softer interactive blue */
+
+  --secondary: #64748b; /* Muted slate (labels/text) */
+
+  --accent: #06b6d4; /* Cyan (clean + medical feel) */
+  --accent-soft: #cfecf3; /* Light cyan background */
+
+  --gray-light: #ffffff;
+  --gray-mid: #f1f5f9; /* Soft section background */
+
+  --border: #e2e8f0; /* Clean borders */
 }
 
 @theme inline {
@@ -20,47 +27,11 @@
   --color-accent: var(--accent);
   --color-gray-light: var(--gray-light);
   --color-gray-mid: var(--gray-mid);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f1720;
-    --foreground: #e8edf2;
-    --primary: #3a8fc7;
-    --primary-light: #5ca5d4;
-    --secondary: #8aacbf;
-    --accent: #d4b48c;
-    --gray-light: #1e2a36;
-    --gray-mid: #2d3a46;
-  }
+  --color-accent-soft: var(--accent-soft);
+  --color-border: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Smooth scrolling for better UX */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Optional: Classy selection color */
-::selection {
-  background: var(--primary-light);
-  color: white;
 }

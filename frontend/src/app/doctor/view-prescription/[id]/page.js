@@ -30,7 +30,12 @@ export default function ViewPrescription() {
   }, [id]);
 
   if (loading)
-    return <p className="text-center mt-20 text-gray-500">Loading...</p>;
+    return (
+      <div className="py-20 text-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary mx-auto mb-3" />
+        <p className="text-sm text-gray-400">Loading patient...</p>
+      </div>
+    );
   if (!patient)
     return (
       <p className="text-center mt-20 text-gray-500">No prescriptions found.</p>
@@ -50,16 +55,18 @@ export default function ViewPrescription() {
   return (
     <>
       {/* SCREEN */}
-      <div className="min-h-screen bg-gray-50 p-6 print:hidden">
-        <div className="max-w-3xl mx-auto space-y-5">
+      <div className="min-h-screen bg-accent-soft p-4 md:p-8 print:hidden text-slate-900">
+        <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.back()}
-              className="text-sm text-gray-500 hover:text-gray-800"
+              className="px-5 py-2.5 bg-white border border-borderSoft text-slate-600 rounded-xl font-bold text-sm hover:border-primary hover:text-primary transition-all"
             >
-              ← Back
+              Back
             </button>
-            <h1 className="text-2xl font-light text-gray-800">Prescriptions</h1>
+            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+              Prescriptions
+            </h1>
             <button
               onClick={() => window.print()}
               className="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90"
@@ -69,34 +76,33 @@ export default function ViewPrescription() {
           </div>
 
           {/* Patient Info */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-            <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-3">
-              Patient
-            </h2>
-            <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
-              <p>
-                <span className="text-gray-400">Name: </span>
-                {patient.name}
-              </p>
-              <p>
-                <span className="text-gray-400">Age: </span>
-                {patient.age}
-              </p>
-              <p>
-                <span className="text-gray-400">Relative: </span>
-                {patient.relativeType} {patient.relativeName}
-              </p>
-              <p>
-                <span className="text-gray-400">CNIC/MR: </span>
-                {patient.cnicOrMrNo}
-              </p>
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-100">
+              {[
+                ["Patient Name", patient.name],
+                ["Age ", `${patient.age} Years`],
+                [
+                  "Guardian/Relative",
+                  `${patient.relativeType} ${patient.relativeName}`,
+                ],
+                ["Registration ID", patient.cnicOrMrNo],
+              ].map(([label, value]) => (
+                <div key={label} className="bg-white p-5">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
+                    {label}
+                  </span>
+                  <span className="text-sm font-bold text-slate-800">
+                    {value || "—"}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Prescription selector if multiple */}
           {prescriptions.length > 1 && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-              <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-3">
+              <h2 className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
                 Select Prescription
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -127,12 +133,12 @@ export default function ViewPrescription() {
             exam.antSeg ||
             exam.fundus) && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-              <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-4">
+              <h2 className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">
                 Eye Examination
               </h2>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-gray-400 border-b border-gray-100 text-xs">
+                  <tr className="text-gray-400 border-b border-gray-5   00 text-xs">
                     <th className="text-left py-2">Finding</th>
                     <th className="text-center py-2">Right (OD)</th>
                     <th className="text-center py-2">Left (OS)</th>
@@ -145,7 +151,7 @@ export default function ViewPrescription() {
                     ["AT", exam.atRight, exam.atLeft],
                   ].map(([label, r, l]) =>
                     r || l ? (
-                      <tr key={label} className="border-b border-gray-50">
+                      <tr key={label} className="border-b border-gray-300">
                         <td className="py-2 font-medium text-gray-600">
                           {label}
                         </td>
@@ -184,7 +190,7 @@ export default function ViewPrescription() {
           {/* Systemic */}
           {(exam.dm || exam.htn || exam.ihd || exam.asthma) && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-              <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-3">
+              <h2 className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">
                 Systemic History
               </h2>
               <div className="flex gap-3 flex-wrap">
@@ -210,7 +216,7 @@ export default function ViewPrescription() {
           {/* Medicines */}
           {meds.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-              <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-4">
+              <h2 className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">
                 Medicines
               </h2>
               <div className="space-y-2">
@@ -270,71 +276,16 @@ export default function ViewPrescription() {
         `}</style>
 
         {/* Header */}
-        <div
-          style={{
-            borderBottom: "2.5px solid #000",
-            paddingBottom: "6px",
-            marginBottom: "8px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ direction: "rtl", flex: 1 }}>
-            <p style={{ fontSize: "8px", color: "#555", margin: 0 }}>
-              کالج روڈ نزد ڈسٹرکٹ ہیڈکوارٹر ہسپتال لیہ
-            </p>
-            <p
-              style={{
-                fontSize: "19px",
-                fontWeight: "bold",
-                margin: "2px 0",
-                fontFamily: "serif",
-              }}
-            >
-              بخت بھری اے آئی کلینک
-            </p>
-            <p style={{ fontSize: "8px", margin: 0 }}>
-              <b>پی ایم ڈی سی نمبر: 24176-P</b>
-            </p>
-            <p style={{ fontSize: "8px", margin: 0 }}>
-              پنجاب ہیلتھ کیئر کمیشن: R-41350
-            </p>
-          </div>
-          <div style={{ width: "58px", textAlign: "center", padding: "0 6px" }}>
-            <div
-              style={{
-                width: "48px",
-                height: "48px",
-                border: "1px solid #ccc",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "7px",
-                color: "#aaa",
-                margin: "0 auto",
-              }}
-            >
-              Logo
-            </div>
-          </div>
-          <div style={{ flex: 1, direction: "rtl", textAlign: "left" }}>
-            <p
-              style={{
-                fontSize: "20px",
-                fontWeight: "bold",
-                fontFamily: "serif",
-                margin: 0,
-              }}
-            >
-              ڈاکٹر ارشاد احمد شیخ
-            </p>
-            <p style={{ fontSize: "8px", margin: "2px 0" }}>
-              ایم بی بی ایس، ڈی اے او
-            </p>
-            <p style={{ fontSize: "8px", margin: 0 }}>فیلوآئی سرجن</p>
-          </div>
+        <div className="w-full mb-2">
+          <img
+            src="/images/bec_notePad_top.png"
+            alt="Doctor Header"
+            style={{
+              width: "100%",
+              height: "auto",
+              objectFit: "contain",
+            }}
+          />
         </div>
 
         <div

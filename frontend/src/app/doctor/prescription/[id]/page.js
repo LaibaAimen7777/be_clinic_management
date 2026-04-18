@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import React from "react";
+import toast from "react-hot-toast";
 
 const VA_OPTIONS = [
   "6/6",
@@ -208,19 +210,31 @@ export default function PrescriptionPage() {
         }),
       });
       if (res.ok) {
-        setTimeout(() => window.print(), 300);
+        setTimeout(() => {
+          window.print();
+
+          // optional delay so print dialog doesn't block navigation instantly
+          setTimeout(() => {
+            router.push("/doctor/patientToday");
+          }, 500);
+        }, 300);
       } else {
-        alert("Failed to save prescription.");
+        toast.error("Failed to save prescription.");
       }
     } catch {
-      alert("Network error.");
+      toast.error("Network error.");
     } finally {
       setSaving(false);
     }
   };
 
   if (loading)
-    return <p className="text-center mt-20 text-gray-500">Loading...</p>;
+    return (
+      <div className="py-20 text-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary mx-auto mb-3" />
+        <p className="text-sm text-gray-400">Loading patient...</p>
+      </div>
+    );
   if (!patient)
     return (
       <p className="text-center mt-20 text-gray-500">Patient not found.</p>
@@ -236,189 +250,226 @@ export default function PrescriptionPage() {
   return (
     <>
       {/* ── SCREEN UI ── */}
-      <div className="min-h-screen bg-gray-50 p-6 print:hidden">
-        <div className="max-w-3xl mx-auto space-y-5">
+      <div className="min-h-screen bg-accent-soft p-4 md:p-8 print:hidden text-slate-900">
+        <div className="max-w-3xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <button
-              onClick={() => router.back()}
-              className="text-sm text-gray-500 hover:text-gray-800"
+              onClick={() => router.push("/doctor/patientToday")}
+              className="px-5 py-2.5 bg-white border border-borderSoft text-slate-600 rounded-xl font-bold text-sm hover:border-primary hover:text-primary transition-all"
             >
-              ← Back
+              BACK
             </button>
-            <h1 className="text-2xl font-light text-gray-800">
-              Create Prescription
-            </h1>
-            <div />
-          </div>
-
-          {/* Patient Info */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-            <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-3">
-              Patient
-            </h2>
-            <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
-              <p>
-                <span className="text-gray-400">Name: </span>
-                {patient.name}
-              </p>
-              <p>
-                <span className="text-gray-400">Age: </span>
-                {patient.age}
-              </p>
-              <p>
-                <span className="text-gray-400">Relative: </span>
-                {patient.relativeType} {patient.relativeName}
-              </p>
-              <p>
-                <span className="text-gray-400">CNIC/MR: </span>
-                {patient.cnicOrMrNo}
-              </p>
-              <p>
-                <span className="text-gray-400">Date: </span>
-                {dateStr}
-              </p>
+            <div className="text-right">
+              <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                Prescription
+              </h1>
             </div>
           </div>
 
-          {/* Eye Examination */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-            <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-4">
-              Eye Examination
-            </h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-3 grid grid-cols-3 gap-2 text-xs text-center text-gray-400 font-medium pb-1 border-b border-gray-100">
-                <span>Field</span>
-                <span>Right Eye (OD)</span>
-                <span>Left Eye (OS)</span>
-              </div>
-
-              <span className="text-sm text-gray-600 self-center">VA</span>
-              <EyeField
-                label=""
-                value={exam.vaRight}
-                onChange={(v) => setExam({ ...exam, vaRight: v })}
-                options={VA_OPTIONS}
-              />
-              <EyeField
-                label=""
-                value={exam.vaLeft}
-                onChange={(v) => setExam({ ...exam, vaLeft: v })}
-                options={VA_OPTIONS}
-              />
-
-              <span className="text-sm text-gray-600 self-center">IOP</span>
-              <EyeField
-                label=""
-                value={exam.iopRight}
-                onChange={(v) => setExam({ ...exam, iopRight: v })}
-                options={IOP_OPTIONS}
-              />
-              <EyeField
-                label=""
-                value={exam.iopLeft}
-                onChange={(v) => setExam({ ...exam, iopLeft: v })}
-                options={IOP_OPTIONS}
-              />
-
-              <span className="text-sm text-gray-600 self-center">AT</span>
-              <EyeField
-                label=""
-                value={exam.atRight}
-                onChange={(v) => setExam({ ...exam, atRight: v })}
-                options={AT_OPTIONS}
-              />
-              <EyeField
-                label=""
-                value={exam.atLeft}
-                onChange={(v) => setExam({ ...exam, atLeft: v })}
-                options={AT_OPTIONS}
-              />
-
-              <span className="text-sm text-gray-600 self-center">
-                Ant. Seg
-              </span>
-              <div className="col-span-2">
-                <input
-                  type="text"
-                  value={exam.antSeg}
-                  onChange={(e) => setExam({ ...exam, antSeg: e.target.value })}
-                  placeholder="Anterior segment findings"
-                  className="w-full p-2 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm"
-                />
-              </div>
-
-              <span className="text-sm text-gray-600 self-center">Fundus</span>
-              <div className="col-span-2">
-                <input
-                  type="text"
-                  value={exam.fundus}
-                  onChange={(e) => setExam({ ...exam, fundus: e.target.value })}
-                  placeholder="Fundus findings"
-                  className="w-full p-2 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm"
-                />
+          {/* Patient Info Card */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-100">
+              {[
+                ["Patient Name", patient.name],
+                ["Age ", `${patient.age} Years`],
+                [
+                  "Guardian/Relative",
+                  `${patient.relativeType} ${patient.relativeName}`,
+                ],
+                ["Registration ID", patient.cnicOrMrNo],
+              ].map(([label, value]) => (
+                <div key={label} className="bg-white p-5">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
+                    {label}
+                  </span>
+                  <span className="text-sm font-bold text-slate-800">
+                    {value || "—"}
+                  </span>
+                </div>
+              ))}
+              <div className="bg-slate-50 p-5 md:col-span-2 flex justify-between items-center">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                  Consultation Date
+                </span>
+                <span className="text-sm font-mono font-bold text-slate-600">
+                  {dateStr}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Systemic History */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-            <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-4">
+          {/* Eye Examination Card */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">
+                Eye Examination
+              </h2>
+            </div>
+
+            <div className="space-y-8">
+              <div className="grid grid-cols-3 gap-6 items-end">
+                <div />
+                <div className="text-center pb-2 border-b-2 border-blue-100">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                    Right Eye (OD)
+                  </span>
+                </div>
+                <div className="text-center pb-2 border-b-2 border-emerald-100">
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                    Left Eye (OS)
+                  </span>
+                </div>
+
+                {[
+                  {
+                    label: "VA (Visual Acuity)",
+                    right: "vaRight",
+                    left: "vaLeft",
+                    options: VA_OPTIONS,
+                  },
+                  {
+                    label: "IOP (Pressure)",
+                    right: "iopRight",
+                    left: "iopLeft",
+                    options: IOP_OPTIONS,
+                  },
+                  {
+                    label: "AT (Tonometry)",
+                    right: "atRight",
+                    left: "atLeft",
+                    options: AT_OPTIONS,
+                  },
+                ].map((row) => (
+                  <React.Fragment key={row.label}>
+                    <span className="text-xs font-bold text-slate-500 mb-3">
+                      {row.label}
+                    </span>
+                    <EyeField
+                      value={exam[row.right]}
+                      onChange={(v) => setExam({ ...exam, [row.right]: v })}
+                      options={row.options}
+                    />
+                    <EyeField
+                      value={exam[row.left]}
+                      onChange={(v) => setExam({ ...exam, [row.left]: v })}
+                      options={row.options}
+                    />
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* High Contrast Inputs for Ant Seg & Fundus */}
+              <div className="grid grid-cols-1 gap-6 pt-6 border-t border-slate-100">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 px-1">
+                    Anterior Segment (Ant. Seg)
+                  </label>
+                  <input
+                    type="text"
+                    value={exam.antSeg}
+                    onChange={(e) =>
+                      setExam({ ...exam, antSeg: e.target.value })
+                    }
+                    // placeholder="e.g. Clear cornea, quiet AC..."
+                    className="w-full p-4 bg-white rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-0 outline-none text-slate-900 font-medium placeholder:text-slate-400 transition-all shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 px-1">
+                    Fundus Examination
+                  </label>
+                  <input
+                    type="text"
+                    value={exam.fundus}
+                    onChange={(e) =>
+                      setExam({ ...exam, fundus: e.target.value })
+                    }
+                    // placeholder="e.g. Healthy disc, normal macula..."
+                    className="w-full p-4 bg-white rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-0 outline-none text-slate-900 font-medium placeholder:text-slate-400 transition-all shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Systemic History - Pill Style */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">
               Systemic History
             </h2>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap gap-2">
               {[
-                ["dm", "DM"],
-                ["htn", "HTN"],
-                ["ihd", "IHD"],
+                ["dm", "Diabetes"],
+                ["htn", "Hypertension"],
+                ["ihd", "Heart Disease"],
                 ["asthma", "Asthma"],
               ].map(([key, label]) => (
-                <label
+                <button
                   key={key}
-                  className="flex items-center gap-2 cursor-pointer select-none"
+                  onClick={() =>
+                    setSystemic({ ...systemic, [key]: !systemic[key] })
+                  }
+                  className={`px-5 py-2.5 rounded-2xl text-xs font-bold border-2 transition-all ${
+                    systemic[key]
+                      ? "bg-slate-900 border-slate-900 text-white"
+                      : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                  }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={systemic[key]}
-                    onChange={(e) =>
-                      setSystemic({ ...systemic, [key]: e.target.checked })
-                    }
-                    className="w-4 h-4 accent-primary"
-                  />
-                  <span className="text-sm text-gray-700">{label}</span>
-                </label>
+                  {label}
+                </button>
               ))}
             </div>
           </div>
 
-          {/* Medicine Search */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-            <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-4">
-              Medicines
+          {/* Medicines Card */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">
+              Rx / Medications
             </h2>
 
-            {/* Search bar */}
-            <div className="relative mb-4">
+            <div className="relative mb-6">
               <input
                 type="text"
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
-                placeholder="Search medicine by name..."
-                className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm"
+                placeholder="Type medicine name to search..."
+                className="w-full p-3 bg-blue-50 border border-blue-800 rounded-2xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
               />
+              {/* Results Dropdown */}
               {(searchResults.length > 0 || searching) && (
-                <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-52 overflow-y-auto">
-                  {searching && (
-                    <p className="p-3 text-sm text-gray-400">Searching...</p>
-                  )}
+                <div className="absolute z-20 w-full bg-white border-2 border-slate-900 rounded-2xl shadow-2xl mt-2 overflow-hidden">
                   {searchResults.map((med) => (
                     <button
                       key={med.id}
                       onClick={() => selectMedicine(med)}
-                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm flex justify-between items-center border-b border-gray-50 last:border-0"
+                      className="w-full text-left px-6 py-4 hover:bg-slate-50 transition-colors flex justify-between items-center group"
                     >
-                      <span className="text-gray-800">{med.name}</span>
-                      <span className="text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
+                      <span className="font-bold text-slate-800 group-hover:text-blue-600">
+                        {med.name}
+                      </span>
+                      <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase">
                         {med.type}
                       </span>
                     </button>
@@ -427,49 +478,47 @@ export default function PrescriptionPage() {
               )}
             </div>
 
-            {/* Selected medicines */}
-            {medicines.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">
-                No medicines added yet. Search above to add.
-              </p>
-            )}
-            <div className="space-y-3">
+            <div className="space-y-4 mb-6">
+              {medicines.length === 0 && (
+                <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-3xl">
+                  <p className="text-sm text-slate-400 font-medium">
+                    No medications added yet.
+                  </p>
+                </div>
+              )}
               {medicines.map((med, i) => (
                 <div
                   key={i}
-                  className="border border-gray-100 rounded-xl p-3 bg-gray-50"
+                  className="relative bg-slate-50 rounded-2xl p-5 border-l-4 border-blue-600 group"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <span className="text-sm font-medium text-gray-800">
-                        {med.name}
-                      </span>
-                      <span className="ml-2 text-xs text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">
-                        {med.type}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => removeMed(i)}
-                      className="text-red-400 hover:text-red-600 text-lg leading-none"
-                    >
-                      ×
-                    </button>
+                  <button
+                    onClick={() => removeMed(i)}
+                    className="absolute -top-2 -right-2 w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-red-600 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ×
+                  </button>
+                  <div className="mb-4">
+                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                      {med.name}
+                    </span>
+                    <span className="ml-3 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 uppercase">
+                      {med.type}
+                    </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="text-xs text-gray-400 block mb-1">
-                        Dose
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1">
+                        Dosage
                       </label>
                       <input
                         type="text"
                         value={med.dose}
                         onChange={(e) => updateMed(i, "dose", e.target.value)}
-                        placeholder="e.g. 5 mg/ml"
-                        className="w-full p-2 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm"
+                        className="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-sm font-bold focus:border-blue-500 outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="text-xs text-gray-400 block mb-1">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1">
                         Frequency
                       </label>
                       <select
@@ -477,24 +526,24 @@ export default function PrescriptionPage() {
                         onChange={(e) =>
                           updateMed(i, "frequency", e.target.value)
                         }
-                        className="w-full p-2 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm"
+                        className="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-sm font-bold focus:border-blue-500 outline-none"
                       >
-                        {FREQ_OPTIONS.map((f) => (
-                          <option key={f}>{f}</option>
+                        {FREQ_OPTIONS.map((opt) => (
+                          <option key={opt}>{opt}</option>
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="text-xs text-gray-400 block mb-1">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1">
                         Route
                       </label>
                       <select
                         value={med.route}
                         onChange={(e) => updateMed(i, "route", e.target.value)}
-                        className="w-full p-2 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm"
+                        className="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-sm font-bold focus:border-blue-500 outline-none"
                       >
-                        {ROUTE_OPTIONS.map((r) => (
-                          <option key={r}>{r}</option>
+                        {ROUTE_OPTIONS.map((opt) => (
+                          <option key={opt}>{opt}</option>
                         ))}
                       </select>
                     </div>
@@ -502,52 +551,51 @@ export default function PrescriptionPage() {
                 </div>
               ))}
             </div>
+
+            {/* Restored Add Medicine Button */}
             <button
               onClick={() => router.push("/medicines/add")}
-              className="w-full mb-4 py-2.5 rounded-xl border border-dashed border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-all"
+              className="w-full py-4 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 text-sm font-bold hover:bg-slate-50 hover:border-slate-300 hover:text-slate-600 transition-all flex items-center justify-center gap-2"
             >
-              + Add Medicine
+              <span className="text-lg">+</span> Add New Medicine to Library
             </button>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow p-5">
-            <h2 className="text-xs uppercase tracking-wider text-gray-400 mb-4">
-              Diagnosis & Treatment
-            </h2>
-            <div className="space-y-3">
+          {/* Diagnosis & Treatment */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+            <div className="grid gap-6">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Diagnosis
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">
+                  Clinical Diagnosis
                 </label>
                 <textarea
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
                   rows={2}
-                  placeholder="e.g. Glaucoma, Cataract... (optional)"
-                  className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm resize-none"
+                  className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none text-sm font-medium transition-all resize-none"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Treatment Plan
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">
+                  Treatment & Advice
                 </label>
                 <textarea
                   value={treatment}
                   onChange={(e) => setTreatment(e.target.value)}
                   rows={2}
-                  placeholder="e.g. Surgery advised, follow up in 2 weeks... (optional)"
-                  className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm resize-none"
+                  className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none text-sm font-medium transition-all resize-none"
                 />
               </div>
             </div>
           </div>
 
+          {/* Big Action Button */}
           <button
             onClick={handleSaveAndPrint}
             disabled={saving}
-            className="w-full bg-primary text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-60"
+            className="w-full bg-primary text-white py-5 rounded-3xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 hover:bg-blue-950 active:scale-[0.98] transition-all disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Save & Print Prescription"}
+            {saving ? "Storing Record..." : "Confirm & Print Prescription"}
           </button>
         </div>
       </div>
@@ -562,7 +610,18 @@ export default function PrescriptionPage() {
         `}</style>
 
         {/* Header */}
-        <div
+        <div className="w-full mb-2">
+          <img
+            src="/images/bec_notePad_top.png"
+            alt="Doctor Header"
+            style={{
+              width: "100%",
+              height: "auto",
+              objectFit: "contain",
+            }}
+          />
+        </div>
+        {/* <div
           style={{
             borderBottom: "2.5px solid #000",
             paddingBottom: "6px",
@@ -627,7 +686,7 @@ export default function PrescriptionPage() {
             </p>
             <p style={{ fontSize: "8px", margin: 0 }}>فیلوآئی سرجن</p>
           </div>
-        </div>
+        </div> */}
 
         {/* Patient row */}
         <div
