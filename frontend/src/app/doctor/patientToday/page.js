@@ -189,7 +189,7 @@ export default function DoctorPatients() {
             ))}
           </div>
         </div>
-        s{/* Patient list */}
+        {/* Patient list */}
         {loading ? (
           <div className="py-20 text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary mx-auto mb-3" />
@@ -224,12 +224,15 @@ export default function DoctorPatients() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="font-black text-slate-900 text-xl tracking-tight truncate">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          {/* NAME */}
+                          <p className="font-black text-foreground text-lg sm:text-xl tracking-tight break-words">
                             {patient.name}
                           </p>
+
+                          {/* STATUS */}
                           <span
-                            className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest ${
+                            className={`self-start sm:self-auto text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest ${
                               patient.status === "Waiting"
                                 ? "bg-amber-100 text-amber-800 border border-amber-200"
                                 : "bg-emerald-100 text-emerald-800 border border-emerald-200"
