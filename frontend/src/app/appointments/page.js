@@ -15,7 +15,7 @@ function getPKTDate() {
 
 const today = getPKTDate();
 
-const STATUS_TABS = ["All", "Waiting", "Checked", "No-Show"];
+const STATUS_TABS = ["All", "Waiting", "Checked", "Missed Appointment"];
 
 export default function Appointments() {
   const [patients, setPatients] = useState([]);
@@ -28,6 +28,8 @@ export default function Appointments() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [rescheduleId, setRescheduleId] = useState(null);
   const [rescheduleDate, setRescheduleDate] = useState(today);
+  const [editErrors, setEditErrors] = useState({});
+  const [editIdType, setEditIdType] = useState("CNIC");
   const router = useRouter();
 
   const fetchPatients = async () => {
@@ -51,7 +53,7 @@ export default function Appointments() {
     All: patients.length,
     Waiting: patients.filter((p) => p.status === "Waiting").length,
     Checked: patients.filter((p) => p.status === "Checked").length,
-    "No-Show": patients.filter((p) => p.status === "No-Show").length,
+    "Missed Appointment": patients.filter((p) => p.status === "No-Show").length,
   };
 
   const filtered = patients.filter((p) => {
@@ -59,12 +61,17 @@ export default function Appointments() {
     const matchSearch =
       p.name.toLowerCase().includes(q) ||
       p.cnicOrMrNo.toLowerCase().includes(q);
-    const matchTab = activeTab === "All" || p.status === activeTab;
+    const tabStatus =
+      activeTab === "Missed Appointment" ? "No-Show" : activeTab;
+    const matchTab = activeTab === "All" || p.status === tabStatus;
     return matchSearch && matchTab;
   });
 
   const startEdit = (patient) => {
     setEditingId(patient.id);
+    setEditErrors({});
+    const isCNIC = /^\d{5}-\d{7}-\d$/.test(patient.cnicOrMrNo);
+    setEditIdType(isCNIC ? "CNIC" : "MR");
     setEditForm({
       name: patient.name,
       age: String(patient.age),
@@ -77,6 +84,11 @@ export default function Appointments() {
   };
 
   const handleSave = async (id) => {
+    const errs = validateEdit();
+    if (Object.keys(errs).length > 0) {
+      setEditErrors(errs);
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch(`/api/patients/${id}`, {
@@ -86,11 +98,48 @@ export default function Appointments() {
       });
       if (res.ok) {
         setEditingId(null);
+        setEditErrors({});
         fetchPatients();
       } else alert("Failed to update.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const validateEdit = () => {
+    const e = {};
+
+    if (!/^[a-zA-Z\s\u0600-\u06FF]{2,100}$/.test(editForm.name.trim()))
+      e.name = "Name must be at least 2 characters (letters only).";
+
+    if (!editForm.relativeType)
+      e.relativeType = "Please select a relative type.";
+
+    if (!/^[a-zA-Z\s\u0600-\u06FF]{2,100}$/.test(editForm.relativeName.trim()))
+      e.relativeName = "Please enter a valid relative name.";
+
+    const age = parseInt(editForm.age);
+    if (isNaN(age) || age < 1 || age > 120)
+      e.age = "Age must be between 1 and 120.";
+
+    const cnic = editForm.cnicOrMrNo.trim();
+    const digitsOnly = cnic.replace(/\D/g, "");
+    const isAllSame =
+      digitsOnly.length > 0 &&
+      [...digitsOnly].every((d) => d === digitsOnly[0]);
+
+    if (editIdType === "CNIC") {
+      if (!/^\d{5}-\d{7}-\d$/.test(cnic) || isAllSame)
+        e.cnicOrMrNo = "Enter a valid CNIC: 42101-1234567-1";
+    } else {
+      if (!/^[A-Za-z0-9\-]{3,20}$/.test(cnic) || isAllSame)
+        e.cnicOrMrNo = "Enter a valid MR No (3–20 alphanumeric characters).";
+    }
+
+    if (!editForm.date || editForm.date > today)
+      e.date = "Date cannot be in the future.";
+
+    return e;
   };
 
   const handleReschedule = async (id) => {
@@ -327,61 +376,202 @@ export default function Appointments() {
                   {editingId === patient.id ? (
                     <div className="p-6">
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                        {[
-                          ["Full Name", "name", "text"],
-                          ["Age", "age", "number"],
-                          ["Relative Name", "relativeName", "text"],
-                          ["CNIC / MR No", "cnicOrMrNo", "text"],
-                        ].map(([label, key, type]) => (
-                          <div key={key}>
-                            <label className="text-xs text-slate-400 block mb-1">
-                              {label}
-                            </label>
-                            <input
-                              type={type}
-                              className={inputCls}
-                              value={editForm[key]}
-                              onChange={(e) =>
-                                setEditForm({
-                                  ...editForm,
-                                  [key]: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                        ))}
+                        {/* Name */}
+                        <div>
+                          <label className="text-xs text-slate-400 block mb-1">
+                            Full Name
+                          </label>
+                          <input
+                            className={`${inputCls} ${editErrors.name ? "border-red-400" : ""}`}
+                            value={editForm.name}
+                            onChange={(e) => {
+                              setEditForm({
+                                ...editForm,
+                                name: e.target.value,
+                              });
+                              setEditErrors({ ...editErrors, name: "" });
+                            }}
+                          />
+                          {editErrors.name && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editErrors.name}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Age */}
+                        <div>
+                          <label className="text-xs text-slate-400 block mb-1">
+                            Age
+                          </label>
+                          <input
+                            type="number"
+                            className={`${inputCls} ${editErrors.age ? "border-red-400" : ""}`}
+                            value={editForm.age}
+                            min={1}
+                            max={120}
+                            onChange={(e) => {
+                              setEditForm({ ...editForm, age: e.target.value });
+                              setEditErrors({ ...editErrors, age: "" });
+                            }}
+                          />
+                          {editErrors.age && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editErrors.age}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Relative Type */}
                         <div>
                           <label className="text-xs text-slate-400 block mb-1">
                             Relative Type
                           </label>
                           <select
-                            className={inputCls}
+                            className={`${inputCls} ${editErrors.relativeType ? "border-red-400" : ""}`}
                             value={editForm.relativeType}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setEditForm({
                                 ...editForm,
                                 relativeType: e.target.value,
-                              })
-                            }
+                              });
+                              setEditErrors({
+                                ...editErrors,
+                                relativeType: "",
+                              });
+                            }}
                           >
+                            <option value="">Select</option>
                             <option>S/O</option>
                             <option>D/O</option>
                             <option>W/O</option>
                           </select>
+                          {editErrors.relativeType && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editErrors.relativeType}
+                            </p>
+                          )}
                         </div>
+
+                        {/* Relative Name */}
+                        <div>
+                          <label className="text-xs text-slate-400 block mb-1">
+                            Relative Name
+                          </label>
+                          <input
+                            className={`${inputCls} ${editErrors.relativeName ? "border-red-400" : ""}`}
+                            value={editForm.relativeName}
+                            onChange={(e) => {
+                              setEditForm({
+                                ...editForm,
+                                relativeName: e.target.value,
+                              });
+                              setEditErrors({
+                                ...editErrors,
+                                relativeName: "",
+                              });
+                            }}
+                          />
+                          {editErrors.relativeName && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editErrors.relativeName}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* CNIC / MR No */}
+                        <div className="md:col-span-2">
+                          <label className="text-xs text-slate-400 block mb-2">
+                            CNIC / MR No
+                          </label>
+                          <div className="flex gap-2 mb-2">
+                            {["CNIC", "MR"].map((t) => (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => {
+                                  setEditIdType(t);
+                                  setEditForm({ ...editForm, cnicOrMrNo: "" });
+                                  setEditErrors({
+                                    ...editErrors,
+                                    cnicOrMrNo: "",
+                                  });
+                                }}
+                                className={`px-3 py-1 text-[10px] font-bold rounded-lg border transition-all ${
+                                  editIdType === t
+                                    ? "bg-primary text-white border-primary"
+                                    : "bg-slate-50 text-slate-400 border-slate-200"
+                                }`}
+                              >
+                                {t === "MR" ? "MR NO" : "CNIC"}
+                              </button>
+                            ))}
+                          </div>
+                          <input
+                            className={`${inputCls} font-mono ${editErrors.cnicOrMrNo ? "border-red-400" : ""}`}
+                            value={editForm.cnicOrMrNo}
+                            placeholder={
+                              editIdType === "CNIC"
+                                ? "42101-1234567-1"
+                                : "MR-2026-XXXX"
+                            }
+                            maxLength={editIdType === "CNIC" ? 15 : 20}
+                            onChange={(e) => {
+                              let val = e.target.value;
+                              if (editIdType === "CNIC") {
+                                val = val.replace(/[^\d]/g, "");
+                                if (val.length <= 5) val = val;
+                                else if (val.length <= 12)
+                                  val = val.slice(0, 5) + "-" + val.slice(5);
+                                else
+                                  val =
+                                    val.slice(0, 5) +
+                                    "-" +
+                                    val.slice(5, 12) +
+                                    "-" +
+                                    val.slice(12, 13);
+                              }
+                              setEditForm({ ...editForm, cnicOrMrNo: val });
+                              setEditErrors({ ...editErrors, cnicOrMrNo: "" });
+                            }}
+                          />
+                          {editErrors.cnicOrMrNo && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editErrors.cnicOrMrNo}
+                            </p>
+                          )}
+                          {editIdType === "CNIC" && !editErrors.cnicOrMrNo && (
+                            <p className="text-slate-400 text-xs mt-1">
+                              Dashes are added automatically as you type.
+                            </p>
+                          )}
+                        </div>
+                        {/* Date */}
                         <div>
                           <label className="text-xs text-slate-400 block mb-1">
                             Date
                           </label>
                           <input
                             type="date"
-                            className={inputCls}
+                            className={`${inputCls} ${editErrors.date ? "border-red-400" : ""}`}
                             value={editForm.date}
-                            onChange={(e) =>
-                              setEditForm({ ...editForm, date: e.target.value })
-                            }
+                            max={today}
+                            onChange={(e) => {
+                              setEditForm({
+                                ...editForm,
+                                date: e.target.value,
+                              });
+                              setEditErrors({ ...editErrors, date: "" });
+                            }}
                           />
+                          {editErrors.date && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editErrors.date}
+                            </p>
+                          )}
                         </div>
+
+                        {/* Status */}
                         <div>
                           <label className="text-xs text-slate-400 block mb-1">
                             Status
@@ -398,7 +588,7 @@ export default function Appointments() {
                           >
                             <option>Waiting</option>
                             <option>Checked</option>
-                            <option>No-Show</option>
+                            <option>Missed Appointment</option>
                           </select>
                         </div>
                       </div>
@@ -411,7 +601,10 @@ export default function Appointments() {
                           {saving ? "Saving..." : "Save Changes"}
                         </button>
                         <button
-                          onClick={() => setEditingId(null)}
+                          onClick={() => {
+                            setEditingId(null);
+                            setEditErrors({});
+                          }}
                           className="px-6 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200"
                         >
                           Cancel
@@ -445,7 +638,9 @@ export default function Appointments() {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold border ${statusStyle[patient.status] ?? ""}`}
                         >
-                          {patient.status}
+                          {patient.status === "No-Show"
+                            ? "Missed Appointment"
+                            : patient.status}
                         </span>
                         <button
                           onClick={() => startEdit(patient)}

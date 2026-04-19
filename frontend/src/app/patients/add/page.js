@@ -439,7 +439,7 @@ export default function AddPatient() {
                   type="date"
                   name="date"
                   value={formData.date}
-                  max={today}
+                  min={today}
                   onChange={handleChange}
                   className={`w-full bg-white border-2 rounded-2xl px-6 py-3 outline-none focus:border-accent transition-all text-slate-800 ${errors.date ? "border-red-400" : "border-borderSoft"}`}
                 />
