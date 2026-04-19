@@ -151,6 +151,7 @@ export default function AddPatient() {
       });
       if (res.ok) {
         router.push("/appointments");
+        toast.success("patient added successfully");
       } else {
         const data = await res.json();
         toast.error("Error: " + (data?.error || "Something went wrong."));
@@ -258,7 +259,7 @@ export default function AddPatient() {
                 returning patients.
               </p>
             </div>
-            <div className="relative z-10">
+            {/* <div className="relative z-10">
               <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
                 <p className="text-[10px] uppercase text-textMuted font-bold mb-1">
                   Clinic ID
@@ -267,7 +268,7 @@ export default function AddPatient() {
                   BEC-2026-OPD
                 </p>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Side */}
@@ -453,7 +454,7 @@ export default function AddPatient() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full sm:w-auto px-12 py-4 bg-primary hover:bg-primaryLight text-white rounded-2xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-60"
+                className="flex sm:w-auto px-12 py-4 bg-primary hover:bg-blue-950 text-white rounded-2xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-60"
               >
                 {loading ? "Processing..." : "Register Patient"}
               </button>

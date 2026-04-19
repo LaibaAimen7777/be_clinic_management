@@ -128,7 +128,6 @@ export default function DoctorPatients() {
             </button>
           </div>
         </div>
-
         {/* Stat cards */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
@@ -162,26 +161,27 @@ export default function DoctorPatients() {
             </div>
           ))}
         </div>
-
         {/* Controls */}
-        <div className="flex gap-3 mb-6 flex-wrap">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          {/* SEARCH */}
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search patient name or CNIC..."
-            className="flex-1 p-3 bg-white border border-blue-800 rounded-2xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            placeholder="Search patient name or ID..."
+            className="w-full sm:flex-1 px-5 py-3 rounded-2xl bg-background border border-gray-mid text-foreground text-sm font-medium placeholder:text-secondary focus:outline-none focus:border-primary shadow-sm"
           />
 
-          <div className="flex bg-gray-light border border-blue-800 rounded-2xl p-2">
+          {/* TABS */}
+          <div className="flex w-full sm:w-auto bg-gray-mid border border-gray-mid rounded-2xl p-1.5">
             {["Waiting", "Checked"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
                   activeTab === tab
-                    ? "bg-[var(--primary)] text-white"
-                    : "text-[var(--secondary)] hover:text-[var(--primary)]"
+                    ? "bg-primary text-white shadow-indigo"
+                    : "text-secondary hover:text-foreground"
                 }`}
               >
                 {tab}
@@ -189,8 +189,7 @@ export default function DoctorPatients() {
             ))}
           </div>
         </div>
-
-        {/* Patient list */}
+        s{/* Patient list */}
         {loading ? (
           <div className="py-20 text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary mx-auto mb-3" />
